@@ -1,0 +1,539 @@
+{
+  "name": "Airtable report - Proprety Management",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "747f2b45-0817-4af4-b18a-1a4e437ee56f",
+      "name": "When clicking ‘Test workflow’",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        440,
+        100
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "jsCode": "// Access the input data from the previous node\nconst inputData = $input.all();\n\n// Use a dictionary to count the frequency of each issue type\nconst issueCounts = {};\n\nfor (const item of inputData) {\n    const issueType = item.json[\"Issue Type\"];\n    if (issueCounts[issueType]) {\n        issueCounts[issueType] += 1;\n    } else {\n        issueCounts[issueType] = 1;\n    }\n}\n\n// Convert the counts to a sorted list of objects by frequency in descending order\nlet sortedCounts = Object.entries(issueCounts)\n    .map(([issueType, count]) => ({ \"Issue Type\": issueType, count }))\n    .sort((a, b) => b.count - a.count);\n\n// Format output to group issue types with the same count\nconst formattedOutput = [];\nfor (let i = 0; i < sortedCounts.length; i++) {\n    if (i > 0 && sortedCounts[i].count === sortedCounts[i - 1].count) {\n        // Append issue type to the last item in formattedOutput if counts match\n        formattedOutput[formattedOutput.length - 1][\"Issue Type\"] += `,${sortedCounts[i][\"Issue Type\"]}`;\n    } else {\n        formattedOutput.push(sortedCounts[i]);\n    }\n}\n\n// Return the formatted output as the result\nreturn formattedOutput;\n"
+      },
+      "id": "eba36f94-af06-4fb8-b84b-e1c5fd0378b6",
+      "name": "Code",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        20
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Access the input data from the previous node\nconst inputData = $input.all();\n\n// Object to store the total time and count for each issue type\nconst issueData = {};\n\n// Iterate over the input data to accumulate resolution times and counts\ninputData.forEach(item => {\n    const issueType = item.json[\"Issue Type\"];\n    const resolutionTime = item.json[\"Resolution Time (hrs)\"];\n    \n    // Initialize entry if the issue type is new\n    if (!issueData[issueType]) {\n        issueData[issueType] = { total_time: 0, count: 0 };\n    }\n    \n    // Accumulate resolution time and increment count\n    issueData[issueType].total_time += resolutionTime;\n    issueData[issueType].count += 1;\n});\n\n// Calculate average time per issue type\nconst averageTimes = Object.keys(issueData).map(issueType => {\n    const data = issueData[issueType];\n    const avgTime = data.total_time / data.count;\n    return { \"Issue Type\": issueType, \"Average Resolution Time (hrs)\": avgTime };\n});\n\n// Return the formatted output\nreturn averageTimes;\n"
+      },
+      "id": "ef58c5df-6a15-472c-a9f9-d6d4163ba167",
+      "name": "Code1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        280
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appOlmeko1adBzXOy",
+          "mode": "list",
+          "cachedResultName": "Khalil_RealEstate",
+          "cachedResultUrl": "https://airtable.com/appOlmeko1adBzXOy"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblAbtdXUbx3L5v5P",
+          "mode": "list",
+          "cachedResultName": "Proprety Management",
+          "cachedResultUrl": "https://airtable.com/appOlmeko1adBzXOy/tblAbtdXUbx3L5v5P"
+        },
+        "filterByFormula": "IS_BEFORE(TODAY(), DATEADD({Request Date}, 30, 'days'))",
+        "options": {
+          "fields": [
+            "Issue Type",
+            "Name Of The Proprety",
+            "Resolution Time (hrs)",
+            "Contractor"
+          ]
+        }
+      },
+      "id": "47293775-c16c-4b2d-81dc-2be7b353c57c",
+      "name": "Search record",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        660,
+        280
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "qWQVDVM6GFFShI7P",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appOlmeko1adBzXOy",
+          "mode": "list",
+          "cachedResultName": "Khalil_RealEstate",
+          "cachedResultUrl": "https://airtable.com/appOlmeko1adBzXOy"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblxyyoW41hWXGvKz",
+          "mode": "list",
+          "cachedResultName": "Top 3 Frequente Issues",
+          "cachedResultUrl": "https://airtable.com/appOlmeko1adBzXOy/tblxyyoW41hWXGvKz"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Frequency": "={{ $json.count }}",
+            "Issue": "={{ $json['Issue Type'] }}"
+          },
+          "matchingColumns": [
+            "Issue",
+            "Frequency"
+          ],
+          "schema": [
+            {
+              "id": "Issue",
+              "displayName": "Issue",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Frequency",
+              "displayName": "Frequency",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "700013b9-b2b2-4c42-9530-db3568d03c8f",
+      "name": "Airtable",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1180,
+        20
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "qWQVDVM6GFFShI7P",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appOlmeko1adBzXOy",
+          "mode": "list",
+          "cachedResultName": "Khalil_RealEstate",
+          "cachedResultUrl": "https://airtable.com/appOlmeko1adBzXOy"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblnAwm6eIGT8olID",
+          "mode": "list",
+          "cachedResultName": "AVG Resolution time",
+          "cachedResultUrl": "https://airtable.com/appOlmeko1adBzXOy/tblnAwm6eIGT8olID"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "Issue",
+            "Frequency"
+          ],
+          "schema": [
+            {
+              "id": "Issue Type",
+              "displayName": "Issue Type",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Average Resolution Time (hrs)",
+              "displayName": "Average Resolution Time (hrs)",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "04c7413e-18d5-4698-961e-80ddd47a4721",
+      "name": "Airtable1",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1180,
+        280
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "qWQVDVM6GFFShI7P",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst inputData = $input.all();\n\n// Step 1: Group the data by contractor\nconst contractors = {};\n\n// Step 2: Calculate total resolution time and count for each contractor\ninputData.forEach(item => {\n  const contractorId = item.json.Contractor.id;\n  if (!contractors[contractorId]) {\n    contractors[contractorId] = {\n      name: item.json.Contractor.name,\n      totalResolutionTime: 0,\n      count: 0\n    };\n  }\n  contractors[contractorId].totalResolutionTime += item.json[\"Resolution Time (hrs)\"];\n  contractors[contractorId].count += 1;\n});\n\n// Step 3: Calculate average resolution time for each contractor\nconst contractorAverages = Object.values(contractors).map(contractor => ({\n  name: contractor.name,\n  averageResolutionTime: contractor.totalResolutionTime / contractor.count\n}));\n\n// Step 4: Find the contractor with highest and lowest average resolution time\nconst highest = contractorAverages.reduce((prev, curr) => prev.averageResolutionTime > curr.averageResolutionTime ? prev : curr);\nconst lowest = contractorAverages.reduce((prev, curr) => prev.averageResolutionTime < curr.averageResolutionTime ? prev : curr);\n\n// Step 5: Return results\nreturn [\n  {\n    json: {\n      highestAverageResolutionTime: highest,\n      lowestAverageResolutionTime: lowest\n    }\n  }\n];\n"
+      },
+      "id": "2fd647b3-705b-40cd-8995-57099ab2212b",
+      "name": "Code2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appOlmeko1adBzXOy",
+          "mode": "list",
+          "cachedResultName": "Khalil_RealEstate",
+          "cachedResultUrl": "https://airtable.com/appOlmeko1adBzXOy"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblptC6tGGjlV95cE",
+          "mode": "list",
+          "cachedResultName": "Highest/Lowest AVG Resolution time",
+          "cachedResultUrl": "https://airtable.com/appOlmeko1adBzXOy/tblptC6tGGjlV95cE"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ $json.highestAverageResolutionTime.name }}",
+            "avg": "={{ $json.highestAverageResolutionTime.averageResolutionTime }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "avg",
+              "displayName": "avg",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "91dbba23-5a81-4f90-9377-1151b26758d8",
+      "name": "Airtable3",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1180,
+        500
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "qWQVDVM6GFFShI7P",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appOlmeko1adBzXOy",
+          "mode": "list",
+          "cachedResultName": "Khalil_RealEstate",
+          "cachedResultUrl": "https://airtable.com/appOlmeko1adBzXOy"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblptC6tGGjlV95cE",
+          "mode": "list",
+          "cachedResultName": "Highest/Lowest AVG Resolution time",
+          "cachedResultUrl": "https://airtable.com/appOlmeko1adBzXOy/tblptC6tGGjlV95cE"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ $('Code2').item.json.lowestAverageResolutionTime.name }}",
+            "avg": "={{ $('Code2').item.json.lowestAverageResolutionTime.averageResolutionTime }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "avg",
+              "displayName": "avg",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c04b6aee-b15c-4c84-81cf-ab5d08f1ff64",
+      "name": "Airtable4",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1400,
+        500
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "qWQVDVM6GFFShI7P",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "months"
+            }
+          ]
+        }
+      },
+      "id": "40b16f82-7b77-4ce9-a26d-8c558e61a82a",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        440,
+        280
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## ***Top three most frequent issues.***",
+        "height": 215.60710966440888,
+        "width": 724.4859202860077
+      },
+      "id": "383dccfc-c872-4d44-978a-06bbb3d6058a",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        940,
+        -40
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## ***Average resolution time per issue type.***",
+        "height": 229.62761496954496,
+        "width": 725.8460244541579,
+        "color": 4
+      },
+      "id": "a0db5d26-2a39-40db-aeec-f418dec38689",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        940,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## ***Contractor with the highest/lowest average resolution time***",
+        "height": 257.4786609573628,
+        "width": 727.3933047868138,
+        "color": 6
+      },
+      "id": "bd0492e6-5075-426e-806f-241007ca5201",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        940,
+        440
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search record": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Airtable1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "Airtable3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Airtable3": {
+      "main": [
+        [
+          {
+            "node": "Airtable4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Search record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6b22421e-e979-4b77-a7e1-d4389ea7d70d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "db5a9c4e10dda7fd897779c47e93e754677e7c8b597458c46dfa01effec1646d"
+  },
+  "id": "dUmBqikopq6PbnO7",
+  "tags": [
+    {
+      "createdAt": "2024-11-09T08:32:41.058Z",
+      "updatedAt": "2024-11-09T08:32:41.058Z",
+      "id": "FjvHLgmPo03bTFIV",
+      "name": "Top 3 frequent issues"
+    },
+    {
+      "createdAt": "2024-11-10T14:31:19.151Z",
+      "updatedAt": "2024-11-10T14:31:19.151Z",
+      "id": "YBQ8rkc0fzkpRoGc",
+      "name": "Average resolution time"
+    },
+    {
+      "createdAt": "2024-11-10T14:31:31.659Z",
+      "updatedAt": "2024-11-10T14:31:31.659Z",
+      "id": "jiThsA2RsGyr3xh6",
+      "name": "Contractor with the high"
+    }
+  ]
+}

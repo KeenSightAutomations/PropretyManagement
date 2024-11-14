@@ -1,0 +1,534 @@
+{
+  "name": "Alerts",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "a4f53758-c541-4d89-aa93-ba6bb1461d16",
+      "name": "When clicking ‘Test workflow’",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        -560,
+        500
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appOlmeko1adBzXOy",
+          "mode": "list",
+          "cachedResultName": "Khalil_RealEstate",
+          "cachedResultUrl": "https://airtable.com/appOlmeko1adBzXOy"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblAbtdXUbx3L5v5P",
+          "mode": "list",
+          "cachedResultName": "Proprety Management",
+          "cachedResultUrl": "https://airtable.com/appOlmeko1adBzXOy/tblAbtdXUbx3L5v5P"
+        },
+        "filterByFormula": "IS_BEFORE(TODAY(), DATEADD({Request Date}, 7, 'days'))",
+        "options": {}
+      },
+      "id": "efe06e12-2ca9-41bc-975a-4664a253cff9",
+      "name": "Airtable",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -280,
+        700
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "qWQVDVM6GFFShI7P",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "dc9c7658-d9ca-4f10-9679-c832d3233a75",
+              "leftValue": "={{ $json['Issue Type'].length}}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "ccc03908-a800-481a-9e64-be04dd369bd5",
+      "name": "If",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1760,
+        300
+      ],
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "jsCode": "// Access the input data from the previous node\nconst inputData = $input.all();\n\n// Create an object to store the count of each issue type and their associated notes\nconst issueDetails = {};\n\n// Loop through each item in the input data to count occurrences and collect notes for each Issue Type\nfor (const item of inputData) {\n    const issueType = item.json[\"Issue Type\"];\n    const notes = item.json[\"Notes\"] || \"No specific notes provided.\"; // Default note if none exists\n\n    // Initialize the issue type if it doesn't exist in the object\n    if (!issueDetails[issueType]) {\n        issueDetails[issueType] = { count: 0, notes: [] };\n    }\n\n    // Increment the count and store the notes\n    issueDetails[issueType].count += 1;\n    issueDetails[issueType].notes.push(notes);\n}\n\n// Filter and keep only the issues that occur 5 times or more\nconst frequentIssues = Object.entries(issueDetails)\n    .filter(([issueType, details]) => details.count >= 5)\n    .map(([issueType, details]) => ({\n        \"Issue Type\": issueType,\n        count: details.count,\n        notes: details.notes.join(\"; \") // Combine all notes into a single string\n    }));\n\n// Return the result as JSON output\nreturn frequentIssues;\n\n"
+      },
+      "id": "347fc492-65f4-4818-a1db-f03384cba577",
+      "name": "Code",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        940,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "khalil.koulal3@gmail.com",
+        "toEmail": "khalilzinox@gmail.Com",
+        "subject": "Alert",
+        "html": "={{ $json.emailBody }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "a55ca017-f669-4e9b-b43d-366a87084895",
+      "name": "Send Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        2260,
+        160
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "dIj8kuZfIK6xOMfm",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Initialize the email body in HTML format\nlet emailBody = `\n<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    body {\n      font-family: Arial, sans-serif;\n      line-height: 1.6;\n      background-color: #f9f9f9;\n      margin: 0;\n      padding: 20px;\n    }\n    h1 {\n      font-size: 26px;\n      color: #2c3e50;\n      text-align: center;\n      margin-bottom: 20px;\n    }\n    p {\n      font-size: 16px;\n      color: #555;\n      margin-bottom: 15px;\n    }\n    .issue {\n      background-color: #ffffff;\n      border: 1px solid #ddd;\n      border-radius: 8px;\n      padding: 15px;\n      margin-bottom: 20px;\n      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);\n    }\n    .issue-title {\n      font-size: 20px;\n      font-weight: bold;\n      color: #333;\n      margin-bottom: 10px;\n    }\n    .issue-count {\n      font-size: 18px;\n      color: #007BFF;\n      margin-bottom: 10px;\n    }\n    .preventive-steps {\n      margin-top: 10px;\n    }\n    .preventive-steps h2 {\n      font-size: 18px;\n      color: #16a085;\n      margin-bottom: 10px;\n    }\n    ul {\n      font-size: 16px;\n      color: #444;\n      padding-left: 20px;\n    }\n    li {\n      margin-bottom: 8px;\n    }\n    hr {\n      border: none;\n      border-top: 1px solid #ddd;\n      margin: 20px 0;\n    }\n    .footer {\n      text-align: center;\n      font-size: 14px;\n      color: #888;\n      margin-top: 20px;\n    }\n    .footer strong {\n      color: #333;\n    }\n  </style>\n</head>\n<body>\n  <h1>High-Frequency Maintenance Issues for This Week</h1>\n  <p>Dear Property Manager,</p>\n  <p>Please review the high-frequency maintenance issues and their suggested preventive maintenance measures below:</p>\n`;\n\n// Loop through each issue and append it to the email body\nitems.forEach(item => {\n  const issueType = item.json[\"Issue Type\"]; // Correctly reference \"Issue Type\" field\n  const occurrences = item.json.count;\n  const preventiveSteps = item.json[\"preventive maintenance steps\"];\n\n  if (issueType) {\n    emailBody += `\n    <div class=\"issue\">\n      <div class=\"issue-title\">${issueType}</div>\n      <div class=\"issue-count\">Occurrences: ${occurrences}</div>\n      <div class=\"preventive-steps\">\n        <h2>Preventive Maintenance Steps:</h2>\n        <ul>\n          ${preventiveSteps.split('; ').map(step => `<li>${step}</li>`).join('')}\n        </ul>\n      </div>\n    </div>\n    <hr>\n    `;\n  } else {\n    emailBody += `\n    <div class=\"issue\">\n      <div class=\"issue-title\">[Type Missing]</div>\n      <div class=\"issue-count\">Occurrences: ${occurrences}</div>\n      <p>No additional details available.</p>\n    </div>\n    <hr>\n    `;\n  }\n});\n\n// Add a closing note\nemailBody += `\n  <p>Please address these issues and implement the preventive measures to avoid further complications.</p>\n  <div class=\"footer\">\n    <p>Best regards,</p>\n    <p><strong>Maintenance Team</strong></p>\n  </div>\n</body>\n</html>\n`;\n\n// Return the email body as a single item\nreturn [{ json: { emailBody } }];\n"
+      },
+      "id": "c40e11f0-a4a9-42bd-938d-a5adff1b3d6b",
+      "name": "Code1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2040,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtMinute": 1
+            }
+          ]
+        }
+      },
+      "id": "06cf8c69-8dbe-431e-a17b-d2d7ea1b885a",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -560,
+        700
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{ $json.message.content }}",
+        "options": {}
+      },
+      "id": "d7876d8b-a009-44b4-bf8c-9ff4d401ce5d",
+      "name": "Edit Fields",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1480,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-3.5-turbo",
+          "mode": "list",
+          "cachedResultName": "GPT-3.5-TURBO"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "Act as a professional property manager with extensive knowledge of property issues, including maintenance, tenant management, legal compliance, and financial oversight. Provide detailed, actionable advice, and when possible, suggest innovative solutions or tools to address the challenges. Always consider the perspective of both property managers and tenants to ensure balanced and effective outcomes",
+              "role": "system"
+            },
+            {
+              "content": "=Generate a preventive maintenance plan for each issue type while keeping the Issue Type {{ $json['Issue Type'] }} and notes \"{{ $json.notes }}\" exactly as they are in the input. Provide preventive maintenance suggestions based on the note, considering that it has occurred more than five times. and keep in mind the note attached the issue Each preventive maintenance step should be a single line, concise and actionable."
+            },
+            {
+              "content": "Extract and return only the JSON object containing the issue details and preventive maintenance steps, without any additional explanation or commentary. The JSON object should include the following structure: Issue Type, count, notes, and preventive maintenance steps. Do not include any introductory or closing text—return only the raw JSON data.\npreventive maintenance steps should be a long text instead of an array\n\n",
+              "role": "assistant"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "bbaaa4d6-b1ec-4d68-914f-c0ae8cadb4d0",
+      "name": "OpenAI",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.5,
+      "position": [
+        1120,
+        300
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "aLv0zlWAxhm9Z7mm",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Fetch all input data from the previous node\nconst inputData = $input.all().map(item => item.json);\n\n// Array to store notifications\nconst notifications = [];\n\n// Iterate through each contractor's data\ninputData.forEach(contractorData => {\n  const { \n    Contractor, \n    \"Issue Type\": issue, \n    \"Cost ($)\": cost, \n    \"Threshold Cost ($)\": thresholdCost, \n    \"Name Of The Proprety\": propertyName, \n    \"Property Location\": propertyLocation \n  } = contractorData;\n\n  // Check if the cost exceeds the threshold cost\n  if (cost > thresholdCost) {\n    // Find alternative contractors who worked on the same issue and stayed within the threshold\n    const alternativeContractors = inputData\n      .filter(\n        altContractor =>\n          altContractor[\"Issue Type\"] === issue && // Same issue type\n          altContractor.Contractor !== Contractor && // Exclude the current contractor\n          altContractor[\"Cost ($)\"] <= thresholdCost // Within the threshold cost\n      )\n      .sort((a, b) => a[\"Cost ($)\"] - b[\"Cost ($)\"]); // Sort by cost in ascending order\n\n    // Prepare notification message\n    let notificationMessage = `Contractor ${Contractor} has exceeded the predefined cost threshold for ${issue} at the property \"${propertyName}\" (${propertyLocation}). ` +\n      `Their cost is $${cost}, while the threshold is $${thresholdCost}. `;\n\n    if (alternativeContractors.length > 0) {\n      const bestContractor = alternativeContractors[0].Contractor; // Select the best contractor (lowest cost)\n      notificationMessage += `Consider reevaluating budget allocation and switching to the following contractor: ${bestContractor}, who can perform the task at a lower cost of $${alternativeContractors[0][\"Cost ($)\"]}.`;\n    } else {\n      notificationMessage += `No alternative contractors are available within the cost threshold for this issue.`;\n    }\n\n    // Add the notification to the list\n    notifications.push({\n      contractor: Contractor,\n      issue: issue,\n      cost: cost,\n      thresholdCost: thresholdCost,\n      propertyName: propertyName,\n      propertyLocation: propertyLocation,\n      bestAlternative: alternativeContractors.length > 0 ? alternativeContractors[0] : null,\n      notificationMessage: notificationMessage\n    });\n  }\n});\n\n// Return the notifications as the output of the Function Node\nreturn notifications.map(notification => ({ json: notification }));\n"
+      },
+      "id": "d5589cd3-8429-4b58-b885-171abe0a4e26",
+      "name": "Code3",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1780,
+        700
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Fetch all input data from the previous node\nconst inputData = $input.all().map(item => item.json);\n\n// Initialize the HTML email report\nlet emailReport = `\n  <html>\n    <head>\n      <style>\n        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }\n        h1 { color: #2c3e50; }\n        h2 { color: #16a085; }\n        p { margin: 10px 0; }\n        .notification { margin: 20px 0; padding: 10px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9; }\n      </style>\n    </head>\n    <body>\n      <h1>Contractor Cost Threshold Report</h1>\n      <p>Dear Team,</p>\n      <p>Here is the report of contractors who exceeded their predefined cost thresholds:</p>\n`;\n\n// Add the notification messages\ninputData.forEach((data, index) => {\n  emailReport += `\n    <div class=\"notification\">\n      <h2>${index + 1}. Contractor: ${data.contractor}</h2>\n      <p><strong>Issue:</strong> ${data.issue}</p>\n      <p><strong>Cost:</strong> $${data.cost}</p>\n      <p><strong>Threshold Cost:</strong> $${data.thresholdCost}</p>\n      <p><strong>Property:</strong> ${data.propertyName} (${data.propertyLocation})</p>\n      <p>${data.notificationMessage}</p>\n  `;\n\n  if (data.bestAlternative) {\n    emailReport += `\n      <p><strong>Suggested Best Contractor:</strong> ${data.bestAlternative.Contractor} (Cost: $${data.bestAlternative[\"Cost ($)\"]})</p>\n    `;\n  } else {\n    emailReport += `\n      <p><strong>Suggested Best Contractor:</strong> No suitable alternative contractors found.</p>\n    `;\n  }\n\n  emailReport += `\n    </div>\n  `;\n});\n\n// Add the closing note\nemailReport += `\n      <p>Please review the above contractors and take necessary actions.</p>\n      <p>Best regards,</p>\n      <p><strong>Maintenance Team</strong></p>\n    </body>\n  </html>\n`;\n\n// Return the email report as the output\nreturn [{ json: { emailReport } }];\n"
+      },
+      "id": "506410e0-2a00-493d-8423-4b2fd6533cb2",
+      "name": "Code4",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2040,
+        700
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "db5bb7dd-26ab-4387-8acb-6380aa383da3",
+      "name": "No Operation, do nothing",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2040,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "khalil.koulal3@gmail.com",
+        "toEmail": "khalilzinox@gmail.Com",
+        "subject": "Alert",
+        "html": "={{ $json.emailReport }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "d16b0435-5da3-4b87-a389-bf642c65e210",
+      "name": "Send Email1",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        2280,
+        700
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "dIj8kuZfIK6xOMfm",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Fetch all input data from the previous node\nconst inputData = $input.all(); \n\n// Transform input data into a usable format\nconst contractorsData = inputData.map(item => item.json);\n\n// Group contractors by issue type for easy lookup of alternative contractors\nconst issueContractorMap = {};\ncontractorsData.forEach(data => {\n  if (!issueContractorMap[data[\"Issue Type\"]]) {\n    issueContractorMap[data[\"Issue Type\"]] = [];\n  }\n  issueContractorMap[data[\"Issue Type\"]].push(data);\n});\n\n// Array to store alerts\nconst alerts = [];\n\n// Iterate through each contractor's data\ncontractorsData.forEach(contractorData => {\n  const { Contractor, \"Issue Type\": issue, \"Predefined Threshold (hrs)\": predefinedThreshold, \"Resolution Time (hrs)\": resolutionTime } = contractorData;\n\n  // Check if the resolution time exceeds the predefined threshold\n  if (resolutionTime > predefinedThreshold) {\n    // Find alternative contractors for the same issue who meet the threshold\n    const alternativeContractors = issueContractorMap[issue].filter(alternative => \n      alternative.Contractor !== Contractor && alternative[\"Resolution Time (hrs)\"] <= predefinedThreshold\n    );\n\n    // Prepare alert message\n    let alertMessage = `Contractor ${Contractor} has exceeded the predefined threshold for ${issue}. ` +\n      `Their resolution time is ${resolutionTime} hours, while the threshold is ${predefinedThreshold} hours. `;\n\n    if (alternativeContractors.length > 0) {\n      // Suggest an alternative contractor if one exists\n      const alternativeNames = alternativeContractors.map(alt => alt.Contractor).join(', ');\n      alertMessage += `Consider switching to contractor(s): ${alternativeNames} for this issue.`;\n    } else {\n      // No alternative contractor found\n      alertMessage += `No alternative contractor available who meets the threshold for this issue.`;\n    }\n\n    // Add the alert to the list\n    alerts.push({\n      contractor: Contractor,\n      issue: issue,\n      resolutionTime: resolutionTime,\n      predefinedThreshold: predefinedThreshold,\n      alertMessage: alertMessage\n    });\n  }\n});\n\n// Return the alerts as the output of the Function Node\nreturn alerts.map(alert => ({ json: alert }));\n"
+      },
+      "id": "eb1004dc-db39-4499-b9f0-35d2cda6fde1",
+      "name": "Code6",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        600,
+        1120
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all input data from the previous node\nconst alerts = $input.all().map(item => item.json);\n\n// Initialize the HTML email report\nlet emailReport = `\n<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    body {\n      font-family: Arial, sans-serif;\n      line-height: 1.6;\n      background-color: #f4f4f9;\n      margin: 0;\n      padding: 20px;\n    }\n    h1 {\n      font-size: 26px;\n      color: #2c3e50;\n      text-align: center;\n      margin-bottom: 20px;\n    }\n    p {\n      font-size: 16px;\n      color: #555;\n      margin-bottom: 15px;\n    }\n    .alert {\n      background-color: #ffffff;\n      border: 1px solid #ddd;\n      border-radius: 8px;\n      padding: 15px;\n      margin-bottom: 20px;\n      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);\n    }\n    .alert h2 {\n      font-size: 20px;\n      color: #16a085;\n      margin-bottom: 10px;\n    }\n    .alert p {\n      margin: 8px 0;\n      font-size: 16px;\n      color: #444;\n    }\n    .footer {\n      text-align: center;\n      font-size: 14px;\n      color: #888;\n      margin-top: 20px;\n    }\n    .footer strong {\n      color: #333;\n    }\n  </style>\n</head>\n<body>\n`;\n\n// Check if there are any alerts\nif (alerts.length === 0) {\n  emailReport += `\n    <h1>Performance Review Report</h1>\n    <p>Dear Team,</p>\n    <p>Good news! No contractors have exceeded their predefined thresholds this time.</p>\n    <div class=\"footer\">\n      <p>Best regards,</p>\n      <p><strong>Maintenance Team</strong></p>\n    </div>\n  </body>\n</html>\n  `;\n} else {\n  // Add header for the report\n  emailReport += `\n    <h1>Performance Review Report</h1>\n    <p>Dear Team,</p>\n    <p>Here is the performance review report for contractors exceeding predefined thresholds:</p>\n  `;\n\n  // Add details of each alert\n  alerts.forEach((alert, index) => {\n    emailReport += `\n      <div class=\"alert\">\n        <h2>${index + 1}. Contractor: ${alert.contractor}</h2>\n        <p><strong>Issue:</strong> ${alert.issue}</p>\n        <p><strong>Resolution Time:</strong> ${alert.resolutionTime} hrs</p>\n        <p><strong>Threshold:</strong> ${alert.predefinedThreshold} hrs</p>\n        <p><strong>Alert:</strong> ${alert.alertMessage}</p>\n      </div>\n    `;\n  });\n\n  // Add a closing note\n  emailReport += `\n    <p>Please review the flagged contractors and consider appropriate actions.</p>\n    <div class=\"footer\">\n      <p>Best regards,</p>\n      <p><strong>Maintenance Team</strong></p>\n    </div>\n  </body>\n</html>\n  `;\n}\n\n// Return the email report as a single JSON object\nreturn [{ json: { emailReport } }];\n"
+      },
+      "id": "a6e7a3b4-8ee7-4115-8e9e-f203c29bd7ac",
+      "name": "Code7",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2040,
+        1120
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "khalil.koulal3@gmail.com",
+        "toEmail": "khalilzinox@gmail.Com",
+        "subject": "Alert",
+        "html": "={{ $json.emailReport }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "b560a855-d3b5-4630-92c6-2dcb37a6794c",
+      "name": "Send Email2",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        2300,
+        1120
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "dIj8kuZfIK6xOMfm",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# ***Detect recurring maintenance issues***\n## Identify maintenance issues occurring more than five times in a week. \n## Automatically generate preventive maintenance suggestions and notify property managers to address recurring problems.",
+        "height": 448.3958333333333,
+        "width": 2195.2708333333344
+      },
+      "id": "bdfdadaa-9191-4712-bdc8-70da07f24f36",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        420,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "content": "# ***Control maintenance costs***\n## Spot maintenance tasks where costs exceed budget thresholds. \n## Notify property managers for budget adjustments\n## and suggest alternative contractors for similar tasks within budget.\n\n",
+        "height": 334.62499999999966,
+        "width": 2194.9823877158447,
+        "color": 3
+      },
+      "id": "f7905b40-ae6e-4976-8e5f-31715e1dfc12",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        420,
+        600
+      ]
+    },
+    {
+      "parameters": {
+        "content": "# ***Monitor contractor performance***\n## Flag contractors whose average resolution time exceeds predefined thresholds. \n## Send performance alerts to property managers with actionable suggestions for reviewing or replacing underperforming contractors.\n\n",
+        "height": 376.95833333333326,
+        "width": 2196.872733382247,
+        "color": 5
+      },
+      "id": "cfda322f-e841-4eac-b5c1-095970a4ede3",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        420,
+        940
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Airtable": {
+      "main": [
+        [
+          {
+            "node": "Code6",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code3",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Test workflow’": {
+      "main": [
+        []
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Send Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code3": {
+      "main": [
+        [
+          {
+            "node": "Code4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code4": {
+      "main": [
+        [
+          {
+            "node": "Send Email1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code6": {
+      "main": [
+        [
+          {
+            "node": "Code7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code7": {
+      "main": [
+        [
+          {
+            "node": "Send Email2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "ed4a869b-c6d5-49d5-97d4-e1b1571cde08",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "db5a9c4e10dda7fd897779c47e93e754677e7c8b597458c46dfa01effec1646d"
+  },
+  "id": "6CBhMlxKRokoyDZp",
+  "tags": [
+    {
+      "createdAt": "2024-11-12T12:04:43.391Z",
+      "updatedAt": "2024-11-12T12:04:43.391Z",
+      "id": "MA0Qxolt9gbqVbXh",
+      "name": "issue occurs more than 5"
+    }
+  ]
+}

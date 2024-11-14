@@ -1,0 +1,1367 @@
+{
+    "name": "Proprety Management - Weekly Summary",
+    "flow": [
+        {
+            "id": 26,
+            "module": "google-docs:createADocument",
+            "version": 1,
+            "parameters": {
+                "__IMTCONN__": 3632556
+            },
+            "mapper": {
+                "name": "Report {{formatDate(now; \"MM/DD/YYYY\")}}",
+                "footer": false,
+                "header": false,
+                "content": "<h2 style=\"text-align: center;\">Weekly Report</h2><br>\n<p>summaryHere</p><br><br>",
+                "folderId": "/",
+                "destination": "drive"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 0,
+                    "y": 0
+                },
+                "restore": {
+                    "expect": {
+                        "folderId": {
+                            "mode": "chose",
+                            "path": [
+                                "/"
+                            ]
+                        },
+                        "destination": {
+                            "label": "My Drive"
+                        }
+                    },
+                    "parameters": {
+                        "__IMTCONN__": {
+                            "data": {
+                                "scoped": "true",
+                                "connection": "google"
+                            },
+                            "label": "My Google connection (khalil.koulal3@gmail.com)"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "__IMTCONN__",
+                        "type": "account:google",
+                        "label": "Connection",
+                        "required": true
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "name",
+                        "type": "text",
+                        "label": "Name",
+                        "required": true
+                    },
+                    {
+                        "name": "content",
+                        "type": "text",
+                        "label": "Content",
+                        "required": true
+                    },
+                    {
+                        "name": "destination",
+                        "type": "select",
+                        "label": "Choose a Drive",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "drive",
+                                "share",
+                                "team"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "header",
+                        "type": "boolean",
+                        "label": "Insert a Header",
+                        "required": true
+                    },
+                    {
+                        "name": "footer",
+                        "type": "boolean",
+                        "label": "Insert a Footer",
+                        "required": true
+                    },
+                    {
+                        "name": "folderId",
+                        "type": "folder",
+                        "label": "New Document's Location",
+                        "required": true
+                    }
+                ]
+            }
+        },
+        {
+            "id": 1,
+            "module": "airtable:ActionSearchRecords",
+            "version": 3,
+            "parameters": {
+                "__IMTCONN__": 3632533
+            },
+            "mapper": {
+                "base": "appOlmeko1adBzXOy",
+                "view": "viwmG8woUcxOtCjJV",
+                "table": "tblAbtdXUbx3L5v5P",
+                "fields": [
+                    "Maintenance Request ID",
+                    "Name Of The Proprety",
+                    "Property Location",
+                    "Issue Type",
+                    "Contractor",
+                    "Request Date",
+                    "Resolution Date",
+                    "Status",
+                    "Predefined Threshold (hrs)",
+                    "Resolution Time (hrs)",
+                    "Tenant Feedback",
+                    "Cost ($)",
+                    "Frequency Count",
+                    "Notes"
+                ],
+                "formula": "IS_BEFORE(TODAY(), DATEADD({Request Date}, 7, 'days'))",
+                "maxRecords": "10",
+                "useColumnId": false
+            },
+            "metadata": {
+                "designer": {
+                    "x": 206,
+                    "y": -239
+                },
+                "restore": {
+                    "expect": {
+                        "base": {
+                            "mode": "chose",
+                            "label": "Khalil_RealEstate"
+                        },
+                        "sort": {
+                            "mode": "chose"
+                        },
+                        "view": {
+                            "mode": "chose",
+                            "label": "All Requests"
+                        },
+                        "table": {
+                            "mode": "chose",
+                            "label": "Proprety Management"
+                        },
+                        "fields": {
+                            "mode": "chose",
+                            "label": [
+                                "Maintenance Request ID",
+                                "Name Of The Proprety",
+                                "Property Location",
+                                "Issue Type",
+                                "Contractor",
+                                "Request Date",
+                                "Resolution Date",
+                                "Status",
+                                "Predefined Threshold (hrs)",
+                                "Resolution Time (hrs)",
+                                "Tenant Feedback",
+                                "Cost ($)",
+                                "Frequency Count",
+                                "Notes"
+                            ]
+                        },
+                        "useColumnId": {
+                            "mode": "chose"
+                        }
+                    },
+                    "parameters": {
+                        "__IMTCONN__": {
+                            "data": {
+                                "scoped": "true",
+                                "connection": "airtable3"
+                            },
+                            "label": "My Airtable Token or Key connection (User ID: usrkidUgWzSI1FVIr)"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "__IMTCONN__",
+                        "type": "account:airtable3,airtable2",
+                        "label": "Connection",
+                        "required": true
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "base",
+                        "type": "select",
+                        "label": "Base",
+                        "required": true
+                    },
+                    {
+                        "name": "useColumnId",
+                        "type": "boolean",
+                        "label": "Use Column ID",
+                        "required": true
+                    },
+                    {
+                        "name": "table",
+                        "type": "select",
+                        "label": "Table",
+                        "required": true
+                    },
+                    {
+                        "name": "formula",
+                        "type": "text",
+                        "label": "Formula"
+                    },
+                    {
+                        "name": "maxRecords",
+                        "type": "integer",
+                        "label": "Limit"
+                    },
+                    {
+                        "name": "sort",
+                        "spec": [
+                            {
+                                "name": "field",
+                                "type": "select",
+                                "label": "Field",
+                                "dynamic": true,
+                                "options": []
+                            },
+                            {
+                                "name": "direction",
+                                "type": "select",
+                                "label": "Direction",
+                                "options": [
+                                    {
+                                        "label": "Descending",
+                                        "value": "desc"
+                                    },
+                                    {
+                                        "label": "Ascending",
+                                        "value": "asc"
+                                    }
+                                ]
+                            }
+                        ],
+                        "type": "array",
+                        "label": "Sort"
+                    },
+                    {
+                        "name": "view",
+                        "type": "select",
+                        "label": "View"
+                    },
+                    {
+                        "name": "fields",
+                        "type": "select",
+                        "label": "Output Fields",
+                        "multiple": true
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "__IMTLENGTH__",
+                        "type": "uinteger",
+                        "label": "Total number of bundles"
+                    },
+                    {
+                        "name": "__IMTINDEX__",
+                        "type": "uinteger",
+                        "label": "Bundle order position"
+                    },
+                    {
+                        "name": "id",
+                        "type": "text",
+                        "label": "ID"
+                    },
+                    {
+                        "name": "createdTime",
+                        "type": "date",
+                        "label": "Created Time"
+                    },
+                    {
+                        "name": "Maintenance Request ID",
+                        "type": "number",
+                        "label": "Maintenance Request ID"
+                    },
+                    {
+                        "name": "Name Of The Proprety",
+                        "type": "text",
+                        "label": "Name Of The Proprety"
+                    },
+                    {
+                        "name": "Property Location",
+                        "type": "text",
+                        "label": "Property Location"
+                    },
+                    {
+                        "name": "Issue Type",
+                        "type": "text",
+                        "label": "Issue Type"
+                    },
+                    {
+                        "name": "Contractor",
+                        "spec": [
+                            {
+                                "name": "id",
+                                "type": "text",
+                                "label": "ID"
+                            },
+                            {
+                                "name": "email",
+                                "type": "email",
+                                "label": "Email"
+                            },
+                            {
+                                "name": "name",
+                                "type": "text",
+                                "label": "Name"
+                            }
+                        ],
+                        "type": "collection",
+                        "label": "Contractor"
+                    },
+                    {
+                        "name": "Request Date",
+                        "time": false,
+                        "type": "date",
+                        "label": "Request Date"
+                    },
+                    {
+                        "name": "Resolution Date",
+                        "time": false,
+                        "type": "date",
+                        "label": "Resolution Date"
+                    },
+                    {
+                        "name": "Status",
+                        "type": "text",
+                        "label": "Status"
+                    },
+                    {
+                        "name": "Predefined Threshold (hrs)",
+                        "type": "number",
+                        "label": "Predefined Threshold (hrs)"
+                    },
+                    {
+                        "name": "Resolution Time (hrs)",
+                        "type": "number",
+                        "label": "Resolution Time (hrs)"
+                    },
+                    {
+                        "name": "Tenant Feedback",
+                        "type": "text",
+                        "label": "Tenant Feedback"
+                    },
+                    {
+                        "name": "Cost ($)",
+                        "type": "number",
+                        "label": "Cost ($)"
+                    },
+                    {
+                        "name": "Frequency Count",
+                        "type": "number",
+                        "label": "Frequency Count"
+                    },
+                    {
+                        "name": "Notes",
+                        "type": "text",
+                        "label": "Notes"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 18,
+            "module": "google-docs:appendADocument",
+            "version": 1,
+            "parameters": {
+                "__IMTCONN__": 3632556
+            },
+            "mapper": {
+                "text": "{{1.`Name Of The Proprety`}} : {{1.`Frequency Count`}} {{1.`Issue Type`}} Issue(s)\n",
+                "choose": "mapping",
+                "select": "document",
+                "document": "{{26.id}}"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 440,
+                    "y": -6
+                },
+                "restore": {
+                    "expect": {
+                        "choose": {
+                            "label": "By Mapping"
+                        },
+                        "select": {
+                            "label": "By appending to the body of document"
+                        }
+                    },
+                    "parameters": {
+                        "__IMTCONN__": {
+                            "data": {
+                                "scoped": "true",
+                                "connection": "google"
+                            },
+                            "label": "My Google connection (khalil.koulal3@gmail.com)"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "__IMTCONN__",
+                        "type": "account:google",
+                        "label": "Connection",
+                        "required": true
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "choose",
+                        "type": "select",
+                        "label": "Select a Document",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "mapping",
+                                "dropdown"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "document",
+                        "type": "text",
+                        "label": "Document ID",
+                        "required": true
+                    },
+                    {
+                        "name": "select",
+                        "type": "select",
+                        "label": "Insert a Paragraph",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "location",
+                                "document",
+                                "segment"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "text",
+                        "type": "text",
+                        "label": "Appended Text",
+                        "required": true
+                    }
+                ]
+            }
+        },
+        {
+            "id": 39,
+            "module": "util:SetVariables",
+            "version": 1,
+            "parameters": {},
+            "mapper": {
+                "scope": "roundtrip",
+                "variables": [
+                    {
+                        "name": "ResolutionTime",
+                        "value": "{{1.`Resolution Time (hrs)`}}"
+                    },
+                    {
+                        "name": "PropretyName",
+                        "value": "{{1.`Name Of The Proprety`}}"
+                    }
+                ]
+            },
+            "metadata": {
+                "designer": {
+                    "x": 652,
+                    "y": -221
+                },
+                "restore": {
+                    "expect": {
+                        "scope": {
+                            "label": "One cycle"
+                        },
+                        "variables": {
+                            "items": [
+                                null,
+                                null
+                            ]
+                        }
+                    }
+                },
+                "expect": [
+                    {
+                        "name": "variables",
+                        "spec": [
+                            {
+                                "name": "name",
+                                "type": "text",
+                                "label": "Variable name",
+                                "required": true
+                            },
+                            {
+                                "name": "value",
+                                "type": "any",
+                                "label": "Variable value"
+                            }
+                        ],
+                        "type": "array",
+                        "label": "Variables"
+                    },
+                    {
+                        "name": "scope",
+                        "type": "select",
+                        "label": "Variable lifetime",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "roundtrip",
+                                "execution"
+                            ]
+                        }
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "ResolutionTime",
+                        "type": "any",
+                        "label": "ResolutionTime"
+                    },
+                    {
+                        "name": "PropretyName",
+                        "type": "any",
+                        "label": "PropretyName"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 14,
+            "module": "builtin:BasicAggregator",
+            "version": 1,
+            "parameters": {
+                "feeder": 1
+            },
+            "mapper": {
+                "PropretyName": "{{39.PropretyName}}",
+                "__IMTLENGTH__": "{{1.`__IMTLENGTH__`}}",
+                "ResolutionTime": "{{39.ResolutionTime}}"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 888,
+                    "y": 3
+                },
+                "restore": {
+                    "extra": {
+                        "feeder": {
+                            "label": "Airtable - Search Records [1]"
+                        },
+                        "target": {
+                            "label": "Custom"
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "id": 38,
+            "module": "util:SetVariables",
+            "version": 1,
+            "parameters": {},
+            "mapper": {
+                "scope": "roundtrip",
+                "variables": [
+                    {
+                        "name": "max",
+                        "value": "{{max(map(14.array; \"ResolutionTime\"))}}"
+                    },
+                    {
+                        "name": "min",
+                        "value": "{{min(map(14.array; \"ResolutionTime\"))}}"
+                    }
+                ]
+            },
+            "metadata": {
+                "designer": {
+                    "x": 1081,
+                    "y": -217
+                },
+                "restore": {
+                    "expect": {
+                        "scope": {
+                            "label": "One cycle"
+                        },
+                        "variables": {
+                            "items": [
+                                null,
+                                null
+                            ]
+                        }
+                    }
+                },
+                "expect": [
+                    {
+                        "name": "variables",
+                        "spec": [
+                            {
+                                "name": "name",
+                                "type": "text",
+                                "label": "Variable name",
+                                "required": true
+                            },
+                            {
+                                "name": "value",
+                                "type": "any",
+                                "label": "Variable value"
+                            }
+                        ],
+                        "type": "array",
+                        "label": "Variables"
+                    },
+                    {
+                        "name": "scope",
+                        "type": "select",
+                        "label": "Variable lifetime",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "roundtrip",
+                                "execution"
+                            ]
+                        }
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "max",
+                        "type": "any",
+                        "label": "max"
+                    },
+                    {
+                        "name": "min",
+                        "type": "any",
+                        "label": "min"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 19,
+            "module": "google-docs:replaceATextInADocument",
+            "version": 1,
+            "parameters": {
+                "__IMTCONN__": 3632556
+            },
+            "mapper": {
+                "document": "{{26.id}}",
+                "destination": "drive",
+                "replaceText": [
+                    {
+                        "newText": "You received a total of {{14.array[1].`__IMTLENGTH__`}} requests last week, with the following details:\n",
+                        "oldText": "summaryHere"
+                    }
+                ]
+            },
+            "metadata": {
+                "designer": {
+                    "x": 1296,
+                    "y": 0
+                },
+                "restore": {
+                    "expect": {
+                        "document": {
+                            "mode": "edit",
+                            "path": []
+                        },
+                        "destination": {
+                            "label": "My Drive"
+                        },
+                        "replaceText": {
+                            "mode": "chose",
+                            "items": [
+                                null
+                            ]
+                        }
+                    },
+                    "parameters": {
+                        "__IMTCONN__": {
+                            "data": {
+                                "scoped": "true",
+                                "connection": "google"
+                            },
+                            "label": "My Google connection (khalil.koulal3@gmail.com)"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "__IMTCONN__",
+                        "type": "account:google",
+                        "label": "Connection",
+                        "required": true
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "destination",
+                        "type": "select",
+                        "label": "Choose a Drive",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "drive",
+                                "share",
+                                "team"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "replaceText",
+                        "spec": [
+                            {
+                                "name": "oldText",
+                                "type": "text",
+                                "label": "old text to be replaced",
+                                "required": true
+                            },
+                            {
+                                "name": "newText",
+                                "type": "text",
+                                "label": "new text to be inserted"
+                            }
+                        ],
+                        "type": "array",
+                        "label": "Replace a Text",
+                        "required": true
+                    },
+                    {
+                        "name": "document",
+                        "type": "file",
+                        "label": "Document ID"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 27,
+            "module": "google-docs:appendADocument",
+            "version": 1,
+            "parameters": {
+                "__IMTCONN__": 3632556
+            },
+            "mapper": {
+                "text": "\nLongest Resolution Time: The task with the longest resolution time took {{38.max}} hours to complete. \n\nShortest Resolution Time: The task with the shortest resolution time was completed in {{38.min}} hours\n\n{{38.NamePropretyWithMinResolutionTime}}",
+                "choose": "mapping",
+                "select": "document",
+                "document": "{{19.id}}"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 1519,
+                    "y": -228
+                },
+                "restore": {
+                    "expect": {
+                        "choose": {
+                            "label": "By Mapping"
+                        },
+                        "select": {
+                            "label": "By appending to the body of document"
+                        }
+                    },
+                    "parameters": {
+                        "__IMTCONN__": {
+                            "data": {
+                                "scoped": "true",
+                                "connection": "google"
+                            },
+                            "label": "My Google connection (khalil.koulal3@gmail.com)"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "__IMTCONN__",
+                        "type": "account:google",
+                        "label": "Connection",
+                        "required": true
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "choose",
+                        "type": "select",
+                        "label": "Select a Document",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "mapping",
+                                "dropdown"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "document",
+                        "type": "text",
+                        "label": "Document ID",
+                        "required": true
+                    },
+                    {
+                        "name": "select",
+                        "type": "select",
+                        "label": "Insert a Paragraph",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "location",
+                                "document",
+                                "segment"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "text",
+                        "type": "text",
+                        "label": "Appended Text",
+                        "required": true
+                    }
+                ]
+            }
+        },
+        {
+            "id": 53,
+            "module": "google-docs:appendADocument",
+            "version": 1,
+            "parameters": {
+                "__IMTCONN__": 3632556
+            },
+            "mapper": {
+                "text": "​\nThe following properties exceeded their defined resolution time: \n​",
+                "choose": "mapping",
+                "select": "document",
+                "document": "{{26.id}}"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 1728,
+                    "y": 4
+                },
+                "restore": {
+                    "expect": {
+                        "choose": {
+                            "label": "By Mapping"
+                        },
+                        "select": {
+                            "label": "By appending to the body of document"
+                        }
+                    },
+                    "parameters": {
+                        "__IMTCONN__": {
+                            "data": {
+                                "scoped": "true",
+                                "connection": "google"
+                            },
+                            "label": "My Google connection (khalil.koulal3@gmail.com)"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "__IMTCONN__",
+                        "type": "account:google",
+                        "label": "Connection",
+                        "required": true
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "choose",
+                        "type": "select",
+                        "label": "Select a Document",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "mapping",
+                                "dropdown"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "document",
+                        "type": "text",
+                        "label": "Document ID",
+                        "required": true
+                    },
+                    {
+                        "name": "select",
+                        "type": "select",
+                        "label": "Insert a Paragraph",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "location",
+                                "document",
+                                "segment"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "text",
+                        "type": "text",
+                        "label": "Appended Text",
+                        "required": true
+                    }
+                ]
+            }
+        },
+        {
+            "id": 52,
+            "module": "airtable:ActionSearchRecords",
+            "version": 3,
+            "parameters": {
+                "__IMTCONN__": 3632533
+            },
+            "mapper": {
+                "base": "appOlmeko1adBzXOy",
+                "view": "viwmG8woUcxOtCjJV",
+                "table": "tblAbtdXUbx3L5v5P",
+                "fields": [
+                    "Name Of The Proprety"
+                ],
+                "formula": "AND(\n    {Resolution Time (hrs)} > {Predefined Threshold (hrs)},\n    IS_BEFORE(TODAY(), DATEADD({Request Date}, 7, 'days'))\n)",
+                "maxRecords": "10",
+                "useColumnId": false
+            },
+            "metadata": {
+                "designer": {
+                    "x": 1930,
+                    "y": -219
+                },
+                "restore": {
+                    "expect": {
+                        "base": {
+                            "mode": "chose",
+                            "label": "Khalil_RealEstate"
+                        },
+                        "sort": {
+                            "mode": "chose"
+                        },
+                        "view": {
+                            "mode": "chose",
+                            "label": "All Requests"
+                        },
+                        "table": {
+                            "mode": "chose",
+                            "label": "Proprety Management"
+                        },
+                        "fields": {
+                            "mode": "chose",
+                            "label": [
+                                "Name Of The Proprety"
+                            ]
+                        },
+                        "useColumnId": {
+                            "mode": "chose"
+                        }
+                    },
+                    "parameters": {
+                        "__IMTCONN__": {
+                            "data": {
+                                "scoped": "true",
+                                "connection": "airtable3"
+                            },
+                            "label": "My Airtable Token or Key connection (User ID: usrkidUgWzSI1FVIr)"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "__IMTCONN__",
+                        "type": "account:airtable3,airtable2",
+                        "label": "Connection",
+                        "required": true
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "base",
+                        "type": "select",
+                        "label": "Base",
+                        "required": true
+                    },
+                    {
+                        "name": "useColumnId",
+                        "type": "boolean",
+                        "label": "Use Column ID",
+                        "required": true
+                    },
+                    {
+                        "name": "table",
+                        "type": "select",
+                        "label": "Table",
+                        "required": true
+                    },
+                    {
+                        "name": "formula",
+                        "type": "text",
+                        "label": "Formula"
+                    },
+                    {
+                        "name": "maxRecords",
+                        "type": "integer",
+                        "label": "Limit"
+                    },
+                    {
+                        "name": "sort",
+                        "spec": [
+                            {
+                                "name": "field",
+                                "type": "select",
+                                "label": "Field",
+                                "dynamic": true,
+                                "options": []
+                            },
+                            {
+                                "name": "direction",
+                                "type": "select",
+                                "label": "Direction",
+                                "options": [
+                                    {
+                                        "label": "Descending",
+                                        "value": "desc"
+                                    },
+                                    {
+                                        "label": "Ascending",
+                                        "value": "asc"
+                                    }
+                                ]
+                            }
+                        ],
+                        "type": "array",
+                        "label": "Sort"
+                    },
+                    {
+                        "name": "view",
+                        "type": "select",
+                        "label": "View"
+                    },
+                    {
+                        "name": "fields",
+                        "type": "select",
+                        "label": "Output Fields",
+                        "multiple": true
+                    }
+                ],
+                "interface": [
+                    {
+                        "name": "__IMTLENGTH__",
+                        "type": "uinteger",
+                        "label": "Total number of bundles"
+                    },
+                    {
+                        "name": "__IMTINDEX__",
+                        "type": "uinteger",
+                        "label": "Bundle order position"
+                    },
+                    {
+                        "name": "id",
+                        "type": "text",
+                        "label": "ID"
+                    },
+                    {
+                        "name": "createdTime",
+                        "type": "date",
+                        "label": "Created Time"
+                    },
+                    {
+                        "name": "Name Of The Proprety",
+                        "type": "text",
+                        "label": "Name Of The Proprety"
+                    }
+                ]
+            }
+        },
+        {
+            "id": 54,
+            "module": "google-docs:appendADocument",
+            "version": 1,
+            "parameters": {
+                "__IMTCONN__": 3632556
+            },
+            "mapper": {
+                "text": "\n{{52.`Name Of The Proprety`}}\n\n",
+                "choose": "mapping",
+                "select": "document",
+                "document": "{{26.id}}"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 2110,
+                    "y": -2
+                },
+                "restore": {
+                    "expect": {
+                        "choose": {
+                            "label": "By Mapping"
+                        },
+                        "select": {
+                            "label": "By appending to the body of document"
+                        }
+                    },
+                    "parameters": {
+                        "__IMTCONN__": {
+                            "data": {
+                                "scoped": "true",
+                                "connection": "google"
+                            },
+                            "label": "My Google connection (khalil.koulal3@gmail.com)"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "__IMTCONN__",
+                        "type": "account:google",
+                        "label": "Connection",
+                        "required": true
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "choose",
+                        "type": "select",
+                        "label": "Select a Document",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "mapping",
+                                "dropdown"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "document",
+                        "type": "text",
+                        "label": "Document ID",
+                        "required": true
+                    },
+                    {
+                        "name": "select",
+                        "type": "select",
+                        "label": "Insert a Paragraph",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "location",
+                                "document",
+                                "segment"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "text",
+                        "type": "text",
+                        "label": "Appended Text",
+                        "required": true
+                    }
+                ]
+            }
+        },
+        {
+            "id": 56,
+            "module": "builtin:BasicAggregator",
+            "version": 1,
+            "parameters": {
+                "feeder": 52
+            },
+            "mapper": {
+                "id": "{{26.id}}",
+                "max": "{{38.max}}",
+                "min": "{{38.min}}",
+                "kind": "{{26.kind}}",
+                "name": "{{26.name}}",
+                "size": "{{26.size}}",
+                "array": "{{14.array}}",
+                "owners": "{{26.owners}}",
+                "shared": "{{26.shared}}",
+                "spaces": "{{26.spaces}}",
+                "parents": "{{26.parents}}",
+                "starred": "{{26.starred}}",
+                "trashed": "{{26.trashed}}",
+                "version": "{{26.version}}",
+                "footerId": "{{26.footerId}}",
+                "headerId": "{{26.headerId}}",
+                "iconLink": "{{26.iconLink}}",
+                "mimeType": "{{26.mimeType}}",
+                "ownedByMe": "{{26.ownedByMe}}",
+                "viewedByMe": "{{26.viewedByMe}}",
+                "createdTime": "{{26.createdTime}}",
+                "exportLinks": "{{26.exportLinks}}",
+                "permissions": "{{26.permissions}}",
+                "webViewLink": "{{26.webViewLink}}",
+                "__IMTINDEX__": "{{52.`__IMTINDEX__`}}",
+                "capabilities": "{{26.capabilities}}",
+                "hasThumbnail": "{{26.hasThumbnail}}",
+                "modifiedByMe": "{{26.modifiedByMe}}",
+                "modifiedTime": "{{26.modifiedTime}}",
+                "__IMTLENGTH__": "{{52.`__IMTLENGTH__`}}",
+                "permissionIds": "{{26.permissionIds}}",
+                "thumbnailLink": "{{26.thumbnailLink}}",
+                "quotaBytesUsed": "{{26.quotaBytesUsed}}",
+                "viewedByMeTime": "{{26.viewedByMeTime}}",
+                "isAppAuthorized": "{{26.isAppAuthorized}}",
+                "writersCanShare": "{{26.writersCanShare}}",
+                "__IMTAGGLENGTH__": "{{14.`__IMTAGGLENGTH__`}}",
+                "modifiedByMeTime": "{{26.modifiedByMeTime}}",
+                "thumbnailVersion": "{{26.thumbnailVersion}}",
+                "explicitlyTrashed": "{{26.explicitlyTrashed}}",
+                "lastModifyingUser": "{{26.lastModifyingUser}}",
+                "linkShareMetadata": "{{26.linkShareMetadata}}",
+                "Name Of The Proprety": "{{52.`Name Of The Proprety`}}",
+                "viewersCanCopyContent": "{{26.viewersCanCopyContent}}",
+                "copyRequiresWriterPermission": "{{26.copyRequiresWriterPermission}}"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 2329,
+                    "y": -189
+                },
+                "restore": {
+                    "extra": {
+                        "feeder": {
+                            "label": "Airtable - Search Records [52]"
+                        },
+                        "target": {
+                            "label": "Custom"
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "id": 55,
+            "module": "google-docs:exportADocument",
+            "version": 1,
+            "parameters": {
+                "__IMTCONN__": 3632556
+            },
+            "mapper": {
+                "document": "{{53.id}}",
+                "mimeType": "application/pdf",
+                "destination": "drive"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 2552,
+                    "y": 27
+                },
+                "restore": {
+                    "expect": {
+                        "document": {
+                            "mode": "edit",
+                            "path": []
+                        },
+                        "mimeType": {
+                            "mode": "chose",
+                            "label": "PDF Document (.pdf)"
+                        },
+                        "destination": {
+                            "label": "My Drive"
+                        }
+                    },
+                    "parameters": {
+                        "__IMTCONN__": {
+                            "data": {
+                                "scoped": "true",
+                                "connection": "google"
+                            },
+                            "label": "My Google connection (khalil.koulal3@gmail.com)"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "__IMTCONN__",
+                        "type": "account:google",
+                        "label": "Connection",
+                        "required": true
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "destination",
+                        "type": "select",
+                        "label": "Choose a Drive",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "drive",
+                                "share",
+                                "team"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "mimeType",
+                        "type": "select",
+                        "label": "Type",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                                "application/vnd.oasis.opendocument.text",
+                                "application/rtf",
+                                "application/pdf",
+                                "text/plain",
+                                "text/html",
+                                "application/epub+zip"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "document",
+                        "type": "file",
+                        "label": "Document ID",
+                        "required": true
+                    }
+                ]
+            }
+        }
+    ],
+    "metadata": {
+        "instant": false,
+        "version": 1,
+        "scenario": {
+            "roundtrips": 1,
+            "maxErrors": 3,
+            "autoCommit": true,
+            "autoCommitTriggerLast": true,
+            "sequential": false,
+            "slots": null,
+            "confidential": false,
+            "dataloss": false,
+            "dlq": false,
+            "freshVariables": false
+        },
+        "designer": {
+            "orphans": [],
+            "notes": [
+                {
+                    "id": 14,
+                    "text": "",
+                    "filter": false
+                }
+            ]
+        },
+        "zone": "us1.make.com"
+    }
+}
