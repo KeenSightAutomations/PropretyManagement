@@ -1,0 +1,860 @@
+{
+  "name": "Automated Analysis and Reporting",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "3505fa50-d4c4-4ec9-b5bd-3a553d490c1c",
+      "name": "When clicking ‘Test workflow’",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        1040,
+        220
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get input from a node three steps back (replace 'Airtable Node Name' with the actual name of the Airtable node)\nconst airtableData = $('Search record1').all(); // Retrieves all rows (items) from the Airtable node\n\n// Flatten the input to extract the data array\nconst issues = airtableData.map(item => item.json);\n\n// Create a map to count repeated issues with the same property name and issue type\nconst issueMap = {};\n\nissues.forEach(issue => {\n  // Normalize keys to avoid inconsistencies (e.g., spaces, case sensitivity)\n  const propertyName = issue[\"Name Of The Proprety\"].trim().toLowerCase();\n  const issueType = issue[\"Issue Type\"].trim().toLowerCase();\n\n  // Create a unique key for grouping\n  const key = `${propertyName}_${issueType}`;\n\n  // Initialize or increment the count for the issue\n  if (!issueMap[key]) {\n    issueMap[key] = {\n      \"Property Name\": issue[\"Name Of The Proprety\"].trim(),\n      \"Issue Type\": issue[\"Issue Type\"].trim(),\n      \"Count\": 0\n    };\n  }\n  issueMap[key][\"Count\"] += 1;\n});\n\n// Convert the map to an array for output\nconst result = Object.values(issueMap);\n\nreturn result;\n"
+      },
+      "id": "1c3c489f-fab6-4b38-9995-152990c0a534",
+      "name": "Code",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1840,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://www.googleapis.com/drive/v3/files/1smy9uEAsB-4k5qYhKCSKe8dUy_4be7B1cyWgSvk9DV0/copy",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleDocsOAuth2Api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"name\": \"Report {{ $now.format('yyyy-MM-dd') }}\"\n}\n",
+        "options": {}
+      },
+      "id": "61257b21-8d1a-4d1a-b5f9-46c44579c764",
+      "name": "HTTP Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1200,
+        220
+      ],
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "S62JHgKIVcfwp6ae",
+          "name": "last try"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentURL": "={{ $('HTTP Request').first().json.id }}",
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "replaceAll",
+              "text": "4th September 20XX",
+              "replaceText": "={{ $now.format('yyyy-MM-dd') }}"
+            },
+            {
+              "action": "replaceAll",
+              "text": "Project Name",
+              "replaceText": "Weekly Report"
+            },
+            {
+              "action": "replaceAll",
+              "text": "Overview here",
+              "replaceText": "=You received a total of  {{ $json.count }} requests last week, with the following details: "
+            },
+            {
+              "action": "replaceAll",
+              "text": "date",
+              "replaceText": "={{ $now.format('yyyy-MM-dd') }}"
+            }
+          ]
+        }
+      },
+      "id": "7ab1c58a-83af-478e-8b8e-3c9d04d9cbbf",
+      "name": "Google Docs2",
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        1680,
+        400
+      ],
+      "alwaysOutputData": false,
+      "executeOnce": false,
+      "retryOnFail": false,
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "S62JHgKIVcfwp6ae",
+          "name": "last try"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appOlmeko1adBzXOy",
+          "mode": "list",
+          "cachedResultName": "Khalil_RealEstate",
+          "cachedResultUrl": "https://airtable.com/appOlmeko1adBzXOy"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblAbtdXUbx3L5v5P",
+          "mode": "list",
+          "cachedResultName": "Proprety Management",
+          "cachedResultUrl": "https://airtable.com/appOlmeko1adBzXOy/tblAbtdXUbx3L5v5P"
+        },
+        "filterByFormula": "IS_BEFORE(TODAY(), DATEADD({Request Date}, 8, 'days'))",
+        "options": {
+          "fields": [
+            "Issue Type",
+            "Name Of The Proprety",
+            "Resolution Time (hrs)",
+            "Contractor",
+            "Predefined Threshold (hrs)"
+          ]
+        }
+      },
+      "id": "86fb6359-c906-452b-a3cf-b01eae83fb6b",
+      "name": "Search record1",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1360,
+        380
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "qWQVDVM6GFFShI7P",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "months"
+            }
+          ]
+        }
+      },
+      "id": "8daeb89f-32ac-4226-b4e6-5ea947f6f55b",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        1040,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "id": "10a0cdc4-0bde-4ed3-870a-37801388a103",
+      "name": "Aggregate",
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        2740,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentURL": "={{ $('Google Docs2').item.json.documentId }}",
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "insert",
+              "text": "=- {{ $json.Count }} {{ $json[\"Issue Type\"] }} issue(s) at {{ $json[\"Property Name\"]}}\n"
+            }
+          ]
+        }
+      },
+      "id": "fb8d63b6-241f-435f-9d11-23ec0d2d6d5d",
+      "name": "Google Docs3",
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        2020,
+        400
+      ],
+      "alwaysOutputData": false,
+      "executeOnce": false,
+      "retryOnFail": false,
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "S62JHgKIVcfwp6ae",
+          "name": "last try"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse the input JSON array\nconst inputJson = $input.all().map(item => item.json);\n\n// Get the length of the array\nconst totalElements = inputJson.length;\n\n// Pass the count to the next node\nreturn [\n  {\n    json: {\n      count: totalElements\n    }\n  }\n];\n"
+      },
+      "id": "11f6cff0-0bd8-4da6-a71f-7c322f9a3a38",
+      "name": "Code1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1520,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Input JSON data\nconst inputData = $('Search record1').all().map(item => item.json); \n\n// Initialize variables to store the highest and lowest resolution time tasks\nlet maxTask = inputData[0]; // Start with the first task\nlet minTask = inputData[0]; // Start with the first task\n\n// Iterate through the tasks to find the max and min resolution time\ninputData.forEach(task => {\n  if (task[\"Resolution Time (hrs)\"] > maxTask[\"Resolution Time (hrs)\"]) {\n    maxTask = task;\n  }\n  if (task[\"Resolution Time (hrs)\"] < minTask[\"Resolution Time (hrs)\"]) {\n    minTask = task;\n  }\n});\n\n// Return the tasks with the highest and lowest resolution time\nreturn [\n  { json: { type: \"Highest Resolution Time\", ...maxTask } },\n  { json: { type: \"Lowest Resolution Time\", ...minTask } }\n];\n"
+      },
+      "id": "3ba17ed7-9a65-475c-ae99-d67d698f021f",
+      "name": "Code2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2600,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentURL": "={{ $('Google Docs2').first().json.documentId}}",
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "insert",
+              "text": "=-  {{ $json.data[0].type }}: {{ $json.data[0][\"Resolution Time (hrs)\"] }} houres for {{ $json.data[0][\"Issue Type\"] }} at {{ $json.data[0][\"Name Of The Proprety\"] }}\n-  {{ $json.data[1].type }}: {{ $json.data[1][\"Resolution Time (hrs)\"] }} for {{ $json.data[1][\"Issue Type\"] }} at {{ $json.data[1][\"Name Of The Proprety\"] }}"
+            }
+          ]
+        }
+      },
+      "id": "7a8373c4-3348-469c-ae13-44ac34665250",
+      "name": "Google Docs4",
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        2900,
+        400
+      ],
+      "alwaysOutputData": false,
+      "executeOnce": false,
+      "retryOnFail": false,
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "S62JHgKIVcfwp6ae",
+          "name": "last try"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "documentURL": "={{ $('HTTP Request').first().json.id }}"
+      },
+      "id": "18ba0bf0-0574-4478-94ec-25a1ade5a076",
+      "name": "Google Docs5",
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        2320,
+        420
+      ],
+      "alwaysOutputData": false,
+      "executeOnce": false,
+      "retryOnFail": false,
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "S62JHgKIVcfwp6ae",
+          "name": "last try"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "id": "b7010edd-7f27-4465-bd59-02f759fa08bf",
+      "name": "Aggregate1",
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        2160,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://docs.googleapis.com/v1/documents/{{ $json.documentId }}:batchUpdate\n",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleDocsOAuth2Api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"requests\": [\n    {\n      \"insertText\": {\n        \"location\": {\n          \"index\": {{ $json.content.length }}\n        },\n        \"text\": \"\\nHighest and Lowest Resolution Time\"\n      }\n    },\n    {\n      \"updateTextStyle\": {\n        \"range\": {\n          \"startIndex\": {{ $json.content.length }},\n          \"endIndex\": {{ $json.content.length + 36 }}\n        },\n        \"textStyle\": {\n          \"bold\": true,\n          \"fontSize\": {\n            \"magnitude\": 14,\n            \"unit\": \"PT\"\n          }\n        },\n        \"fields\": \"bold,fontSize\"\n      }\n    }\n  ]\n}\n",
+        "options": {}
+      },
+      "id": "a1accd9e-6f27-4db7-ad36-3938c25f52cb",
+      "name": "HTTP Request2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2460,
+        220
+      ],
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "S62JHgKIVcfwp6ae",
+          "name": "last try"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "documentURL": "={{ $('HTTP Request').first().json.id }}"
+      },
+      "id": "11710282-4342-400c-8ed9-cd922eb8e3fb",
+      "name": "Google Docs6",
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        3060,
+        400
+      ],
+      "alwaysOutputData": false,
+      "executeOnce": false,
+      "retryOnFail": false,
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "S62JHgKIVcfwp6ae",
+          "name": "last try"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "\n// Get data from the previous node\nconst inputData = $('Search record1').all().map(item => item.json);\n\n// Filter issues that exceed the predefined threshold\nconst exceedingThreshold = inputData.filter(issue => {\n  return issue[\"Resolution Time (hrs)\"] > issue[\"Predefined Threshold (hrs)\"];\n});\n\n// Return the filtered data\nreturn exceedingThreshold;\n"
+      },
+      "id": "eebde162-ff5d-4320-8d5b-1b9c2a6a86b1",
+      "name": "Code3",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3480,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentURL": "={{ $('Google Docs2').item.json.documentId }}",
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "insert",
+              "text": "=\n- The task assigned to {{ $json.Contractor }} at {{ $json[\"Name Of The Proprety\"] }} regarding {{ $json[\"Issue Type\"] }} issue exceeded the predefined threshold of {{ $json[\"Predefined Threshold (hrs)\"] }} hours, taking  {{ $json[\"Resolution Time (hrs)\"] }} hours to resolve"
+            }
+          ]
+        }
+      },
+      "id": "9cab740a-a9fa-460a-946f-8e46cd1ecaf0",
+      "name": "Google Docs",
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        3680,
+        400
+      ],
+      "alwaysOutputData": false,
+      "executeOnce": false,
+      "retryOnFail": false,
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "S62JHgKIVcfwp6ae",
+          "name": "last try"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://docs.googleapis.com/v1/documents/{{ $json.documentId }}:batchUpdate\n",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleDocsOAuth2Api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"requests\": [\n    {\n      \"insertText\": {\n        \"location\": {\n          \"index\": {{ $json.content.length }}\n        },\n        \"text\": \"\\nDelayed Requests Exceeding Threshold\"\n      }\n    },\n    {\n      \"updateTextStyle\": {\n        \"range\": {\n          \"startIndex\": {{ $json.content.length }},\n          \"endIndex\": {{ $json.content.length + 37 }}\n        },\n        \"textStyle\": {\n          \"bold\": true,\n          \"fontSize\": {\n            \"magnitude\": 14,\n            \"unit\": \"PT\"\n          }\n        },\n        \"fields\": \"bold,fontSize\"\n      }\n    }\n  ]\n}\n",
+        "options": {}
+      },
+      "id": "55746461-8b3f-4673-a1da-178055f71919",
+      "name": "HTTP Request6",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3200,
+        220
+      ],
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "S62JHgKIVcfwp6ae",
+          "name": "last try"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://docs.googleapis.com/v1/documents/{{ $('Google Docs7').first().json.documentId }}:batchUpdate\n",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleDocsOAuth2Api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"requests\": [\n    {\n      \"deleteContentRange\": {\n        \"range\": {\n          \"startIndex\": {{ $('Google Docs7').item.json.content.length  }},\n          \"endIndex\": {{ $('Google Docs7').item.json.content.length + 1 }}\n        }\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "id": "e57e4f57-c106-4db0-a818-d68636f0d67f",
+      "name": "HTTP Request7",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3600,
+        -160
+      ],
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "S62JHgKIVcfwp6ae",
+          "name": "last try"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "documentURL": "={{ $('HTTP Request6').first().json.documentId }}"
+      },
+      "id": "76dda169-4500-416d-b5af-f0d7f1510cc7",
+      "name": "Google Docs7",
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        3400,
+        -160
+      ],
+      "alwaysOutputData": false,
+      "executeOnce": false,
+      "retryOnFail": false,
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "S62JHgKIVcfwp6ae",
+          "name": "last try"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://docs.googleapis.com/v1/documents/{{ $('Google Docs8').item.json.documentId }}:batchUpdate\n",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleDocsOAuth2Api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"requests\": [\n    {\n      \"insertText\": {\n        \"location\": {\n          \"index\": {{ $('Google Docs8').item.json.content.length }},\n        },\n        \"text\": \"- The task assigned to {{ $json.Contractor }} at {{ $json[\"Name Of The Proprety\"] }} regarding {{ $json[\"Issue Type\"] }} issue exceeded the predefined threshold of {{ $json[\"Predefined Threshold (hrs)\"] }} hours, taking  {{ $json[\"Resolution Time (hrs)\"] }} hours to resolve\\n\"\n      }\n    }\n  ]\n}\n",
+        "options": {}
+      },
+      "id": "cb34606d-fe83-437b-87b4-fbc9cfa6b37b",
+      "name": "HTTP Request8",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3920,
+        120
+      ],
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "S62JHgKIVcfwp6ae",
+          "name": "last try"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "documentURL": "={{ $json.documentId }}"
+      },
+      "id": "867456aa-d22c-4ff5-82d1-0cd6aa01ac6a",
+      "name": "Google Docs8",
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        3840,
+        -160
+      ],
+      "alwaysOutputData": false,
+      "executeOnce": false,
+      "retryOnFail": false,
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "S62JHgKIVcfwp6ae",
+          "name": "last try"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Search record1": [
+      {
+        "json": {
+          "id": "rec6y7RnGTKo9UqDf",
+          "createdTime": "2024-11-11T22:07:33.000Z",
+          "Contractor": "James",
+          "Resolution Time (hrs)": 2,
+          "Issue Type": "issueX",
+          "Name Of The Proprety": "Steven Proprety",
+          "Predefined Threshold (hrs)": 3
+        }
+      },
+      {
+        "json": {
+          "id": "recMvWj8DUJt6Dfct",
+          "createdTime": "2024-10-29T19:59:58.000Z",
+          "Contractor": "Andrew",
+          "Resolution Time (hrs)": 3,
+          "Issue Type": "Electrical",
+          "Name Of The Proprety": "Johan Proprety",
+          "Predefined Threshold (hrs)": 3
+        }
+      },
+      {
+        "json": {
+          "id": "recRd1dz7Bd7hRrHw",
+          "createdTime": "2024-11-11T22:07:39.000Z",
+          "Contractor": "Noah",
+          "Resolution Time (hrs)": 6,
+          "Issue Type": "HVAC",
+          "Name Of The Proprety": "Steven Proprety",
+          "Predefined Threshold (hrs)": 3
+        }
+      },
+      {
+        "json": {
+          "id": "recRgyTLHAIR6Lcna",
+          "createdTime": "2024-11-11T22:07:44.000Z",
+          "Contractor": "kamil",
+          "Resolution Time (hrs)": 6,
+          "Issue Type": "issueX",
+          "Name Of The Proprety": "Steven Proprety",
+          "Predefined Threshold (hrs)": 3
+        }
+      },
+      {
+        "json": {
+          "id": "recTOVvtu6rk5zerg",
+          "createdTime": "2024-10-29T20:31:00.000Z",
+          "Contractor": "jhones",
+          "Resolution Time (hrs)": 6,
+          "Issue Type": "issueX",
+          "Name Of The Proprety": "Steven Proprety",
+          "Predefined Threshold (hrs)": 3
+        }
+      },
+      {
+        "json": {
+          "id": "recVezoJyJ6MUuhCu",
+          "createdTime": "2024-10-29T20:17:33.000Z",
+          "Contractor": "Khalil",
+          "Resolution Time (hrs)": 5,
+          "Issue Type": "Roofing",
+          "Name Of The Proprety": "Noah Proprety",
+          "Predefined Threshold (hrs)": 3
+        }
+      },
+      {
+        "json": {
+          "id": "reccPaqXjVTF2kGQ2",
+          "createdTime": "2024-10-29T19:59:59.000Z",
+          "Contractor": "James",
+          "Resolution Time (hrs)": 2,
+          "Issue Type": "Electrical",
+          "Name Of The Proprety": "Johan Proprety",
+          "Predefined Threshold (hrs)": 3
+        }
+      },
+      {
+        "json": {
+          "id": "recrrz2izv3XavaeZ",
+          "createdTime": "2024-11-11T22:07:26.000Z",
+          "Contractor": "Michael",
+          "Resolution Time (hrs)": 6,
+          "Issue Type": "issueX",
+          "Name Of The Proprety": "Steven Proprety",
+          "Predefined Threshold (hrs)": 3
+        }
+      },
+      {
+        "json": {
+          "id": "recxt3Z3XEfDvkyYH",
+          "createdTime": "2024-11-11T22:07:12.000Z",
+          "Contractor": "Stephen",
+          "Resolution Time (hrs)": 6,
+          "Issue Type": "issueX",
+          "Name Of The Proprety": "Steven Proprety",
+          "Predefined Threshold (hrs)": 3
+        }
+      },
+      {
+        "json": {
+          "id": "reczgboZ7Qng0pHzg",
+          "createdTime": "2024-11-11T22:06:49.000Z",
+          "Contractor": "mick",
+          "Resolution Time (hrs)": 2,
+          "Issue Type": "Roofing",
+          "Name Of The Proprety": "Steven Proprety",
+          "Predefined Threshold (hrs)": 3
+        }
+      }
+    ]
+  },
+  "connections": {
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Search record1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search record1": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Google Docs4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Docs2": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Google Docs3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Google Docs2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Docs3": {
+      "main": [
+        [
+          {
+            "node": "Aggregate1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate1": {
+      "main": [
+        [
+          {
+            "node": "Google Docs5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Docs5": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Docs4": {
+      "main": [
+        [
+          {
+            "node": "Google Docs6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Docs6": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code3": {
+      "main": [
+        [
+          {
+            "node": "Google Docs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request6": {
+      "main": [
+        [
+          {
+            "node": "Code3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        []
+      ]
+    },
+    "HTTP Request7": {
+      "main": [
+        [
+          {
+            "node": "Google Docs8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Docs7": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request8": {
+      "main": [
+        []
+      ]
+    },
+    "Google Docs8": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e77f9ef5-672b-4cfc-862b-6aeb1a3fba40",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "db5a9c4e10dda7fd897779c47e93e754677e7c8b597458c46dfa01effec1646d"
+  },
+  "id": "kBdY4fA9iVYiP2ve",
+  "tags": []
+}
